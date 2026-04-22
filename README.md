@@ -1,2 +1,2 @@
 # sentinelboard-qt
-Branch Main -> versione stabile
+Branch Dev -> integrazione
