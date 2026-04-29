@@ -1,5 +1,5 @@
 ## Formato del pacchetto
-Ogni campione viene inviato da Arduino come una singola riga di testo nel seguente formato:
+Ogni campione viene inviato da ESP32 come una singola riga di testo nel seguente formato:
 
 $TEL;TIME=12345;TEMP=24.6;HUM=51.2;LIGHT=420;STATUS=OK
 
@@ -24,7 +24,7 @@ Separatore errato (, al posto di ;) -> $TEL,TIME=1000,TEMP=23.4,HUM=48.9,LIGHT=3
 Valore non numerico (TEMP non convertibile in un numero) -> $TEL;TIME=1000;TEMP=abc;HUM=48.9;LIGHT=350;STATUS=OK
 
 ## Baud rate
-115200 (sia nello sketch Arduino sia nella configurazione della porta seriale lato Qt)
+115200 (sia nello sketch ESP32 sia nella configurazione della porta seriale lato Qt)
 
 ## Terminazione con newline
 Ogni pacchetto deve terminare con il carattere di newline:

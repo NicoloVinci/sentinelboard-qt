@@ -1,10 +1,4 @@
-- tensione
-- pin necessari
-- libreria eventuale
-- valore letto
-- unità di misura
-
-• Arduino -> 5V (USB)
+• ESP32 -> 5V (USB)
 • 1 DHT22 -> 3.3-5.5V -> 1 pin digitale (DATA), 1 VCC e 1 GND -> Librerie: DHT sensor library, Adafruit Unified Sensor -> Legge temperatura e umidità in, rispettivamente, °C e %RH
 • 4 LDR -> 5V (partitore su A0-A3) -> 1 pin analogico per LDR (A0-A3), 1 VCC e 1 GND via partitore -> legge tensione proporzionale alla luce (valore ADC 0-1023) in un valore proporzionale a lux
 • 2 Mini pannelli fotovoltaici -> 2-6V a vuoto -> vanno su batteria -> leggono tensione/corrente generata in V e mA
@@ -16,5 +10,5 @@
 • breadboard -> fino a 5-12V
 • Jumper
 • resistenze -> tipicamente 5-12V -> in serie/parallelo a sensori/LED/partitori
-• cavo USB -> 5V -> collegato a PC e Arduino
+• cavo USB -> 5V -> collegato a PC e ESP32
 • eventuali moduli aggiuntivi

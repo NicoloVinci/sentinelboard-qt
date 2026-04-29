@@ -11,7 +11,7 @@ L’obiettivo è dividere chiaramente i compiti tra i tre membri del gruppo, def
 
 | Vinci | Dashboard Qt, UI, grafici, parser, architettura software, integrazione lato PC |
 | Minut - Piazza - Vinci | Documentazione, protocollo seriale, README, gestione repository, supporto organizzativo |
-| Minut e Piazza | Parte Arduino, sensori, cablaggio, letture reali, integrazione hardware |
+| Minut e Piazza | Parte ESP32, sensori, cablaggio, letture reali, integrazione hardware |
 
 ---
 
@@ -29,7 +29,7 @@ Vinci si occupa della parte desktop del progetto.
 - implementare `AlarmManager`
 - implementare `CsvLogger`
 - testare la modalità simulazione
-- integrare la dashboard con Arduino reale
+- integrare la dashboard con ESP32 reale
 
 ---
 
@@ -53,13 +53,13 @@ Tutti e tre si occupano della documentazione e dell’organizzazione del progett
 Minut e Piazza si occupa della parte embedded e dei sensori.
 
 ### Compiti principali
-- creare la struttura iniziale del repository Arduino
+- creare la struttura iniziale del repository ESP32
 - definire i pin dei sensori
 - scrivere lo sketch base con inizializzazione seriale
 - leggere i sensori
 - costruire il pacchetto seriale nel formato definito
 - testare l’output con monitor seriale
-- collegare Arduino alla dashboard Qt per i test reali
+- collegare ESP32 alla dashboard Qt per i test reali
 
 ---
 
@@ -70,8 +70,8 @@ Minut e Piazza si occupa della parte embedded e dei sensori.
 | Entro 3 maggio | progetto Qt base compilabile + simulazione dati |
 | Entro 6 maggio | protocollo seriale definitivo + parser + data model |
 | Entro 9 maggio | dashboard con valori live e grafici |
-| Entro 11 maggio | sketch Arduino con output seriale base |
-| Entro 13 maggio | integrazione Qt + Arduino reale |
+| Entro 11 maggio | sketch ESP32 con output seriale base |
+| Entro 13 maggio | integrazione Qt + ESP32 reale |
 | Entro 15 maggio | test finali, correzione bug, documentazione finale |
 | 16 maggio | consegna progetto |
 
@@ -101,7 +101,7 @@ Minut e Piazza si occupa della parte embedded e dei sensori.
 - [ ] allarmi funzionanti
 - [ ] export CSV funzionante
 
-### Blocco 4 - Sviluppo Arduino
+### Blocco 4 - Sviluppo ESP32
 - [ ] sketch base creato
 - [ ] sensori collegati correttamente
 - [ ] lettura sensori funzionante
