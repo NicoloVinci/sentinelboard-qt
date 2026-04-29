@@ -106,4 +106,4 @@ sentinelboard-qt/
 	Gestisce intestazioni e formato dei campi
 
 ## Formato pacchetto seriale
-$TEL;TIME=12345;TEMP=24.6;HUM=51.2;DIST=38.4;MOTION=1;LIGHT=420;STATUS=OK
+$TEL;TIME=12345;TEMP=24.6;HUM=51.2;LIGHT=420;STATUS=OK

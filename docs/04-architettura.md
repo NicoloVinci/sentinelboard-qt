@@ -66,8 +66,6 @@ Dati gestiti
 	•	tempo del campione
 	•	temperatura
 	•	umidità
-	•	distanza
-	•	movimento
 	•	luminosità
 	•	stato generale
 
@@ -89,8 +87,6 @@ Responsabilità
 Esempi di condizioni di allarme
 	•	temperatura troppo alta
 	•	umidità troppo bassa o troppo alta
-	•	oggetto troppo vicino
-	•	movimento rilevato
 	•	luce ambiente sotto soglia
 
 Vantaggio

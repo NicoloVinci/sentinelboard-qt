@@ -56,10 +56,7 @@ Minut e Piazza si occupa della parte embedded e dei sensori.
 - creare la struttura iniziale del repository Arduino
 - definire i pin dei sensori
 - scrivere lo sketch base con inizializzazione seriale
-- leggere il DHT22
-- leggere l’HC-SR04
-- leggere il PIR
-- leggere la LDR
+- leggere i sensori
 - costruire il pacchetto seriale nel formato definito
 - testare l’output con monitor seriale
 - collegare Arduino alla dashboard Qt per i test reali
