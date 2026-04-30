@@ -2,7 +2,7 @@
 
 ## Descrizione
 SentinelBoard è una Smart Monitoring Dashboard sviluppata in C++ con Qt Creator.
-L'applicazione riceve in tempo reale i dati da una scheda ESP32 tramite comunicazione seriale
+L'applicazione riceve in tempo reale i dati da una scheda Arduino tramite comunicazione seriale
 e visualizza temperatura, umidità, distanza, movimento e luminosità tramite:
 
 - card numeriche
@@ -29,7 +29,7 @@ ambiente di sviluppo Ubuntu in macchina virtuale come richiesto dal docente.
 - IDE: Qt Creator
 - Sistema operativo di sviluppo: Ubuntu (VirtualBox / UTM)
 - Controllo versione: Git + GitHub
-- Comunicazione: Seriale USB verso ESP32
+- Comunicazione: Seriale USB verso Arduino
 
 ---
 
@@ -87,7 +87,7 @@ sentinelboard-qt/
 	Visualizzazione card, grafici, log eventi, stato connessione
 - SerialManager
 	Gestisce la porta seriale (apertura/chiusura)
-	Legge le righe ricevute da ESP32
+	Legge le righe ricevute da Arduino
 	Emette segnali con le stringhe complete del pacchetto
 - TelemetryParser
 	Riceve una riga di testo

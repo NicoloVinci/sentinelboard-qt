@@ -21,7 +21,7 @@ Il suo compito principale è mostrare i dati e reagire agli eventi generati dagl
 ## SerialManager
 
 Ruolo
- SerialManager  gestisce la comunicazione seriale tra ESP32 e applicazione Qt.
+ SerialManager  gestisce la comunicazione seriale tra Arduino e applicazione Qt.
 
 Responsabilità
 	•	rilevare le porte seriali disponibili
