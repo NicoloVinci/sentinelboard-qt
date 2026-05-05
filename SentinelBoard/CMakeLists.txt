@@ -29,6 +29,11 @@ qt_add_executable(TuoProgetto
     ./include/mainwindow.h
     ./include/serialmanager.h
     ./include/telemetryparser.h
+    include/datasourcemode.h
+    include/idatasource.h
+    src/idatasource.cpp
+    include/SimulationDataSource.h
+    src/SimulationDataSource.cpp
 )
 
 target_include_directories(TuoProgetto PRIVATE
@@ -39,4 +44,9 @@ target_link_libraries(TuoProgetto PRIVATE
     Qt6::Widgets
     Qt6::SerialPort
     Qt6::Charts
+)
+
+target_sources(TuoProgetto PRIVATE
+    src/idatasource.cpp
+    include/idatasource.h
 )
