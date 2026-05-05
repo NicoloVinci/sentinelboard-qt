@@ -2,16 +2,14 @@
 
 ## Descrizione
 SentinelBoard è una Smart Monitoring Dashboard sviluppata in C++ con Qt Creator.
-L'applicazione riceve in tempo reale i dati da una scheda Arduino tramite comunicazione seriale
-e visualizza temperatura, umidità, distanza, movimento e luminosità tramite:
+L'applicazione riceve in tempo reale i dati da una scheda Arduino tramite comunicazione seriale e visualizza temperatura, umidità e luminosità tramite:
 
 - card numeriche
 - grafici live
 - indicatori di allarme
 - storico esportabile in CSV
 
-Il progetto fa parte del Project Work di TPSIT (4ª AII ITIS A. Rossi, Vicenza) e utilizza come
-ambiente di sviluppo Ubuntu in macchina virtuale come richiesto dal docente.
+Il progetto fa parte del Project Work di TPSIT (4ª AII ITIS A. Rossi, Vicenza) e utilizza come ambiente di sviluppo Ubuntu in macchina virtuale come richiesto dal docente.
 
 ---
 
@@ -46,32 +44,31 @@ Moduli Qt utilizzati dal progetto:
 
 ## Struttura del progetto
 
-```text
 sentinelboard-qt/
 ├── README.md
-├── SentinelBoard.pro
-├── src/
-│   ├── main.cpp
-│   ├── mainwindow.cpp
-│   ├── serialmanager.cpp
-│   ├── telemetryparser.cpp
-│   ├── datamodel.cpp
-│   ├── alarmmanager.cpp
-│   └── csvlogger.cpp
-├── include/
-│   ├── mainwindow.h
-│   ├── serialmanager.h
-│   ├── telemetryparser.h
-│   ├── datamodel.h
-│   ├── alarmmanager.h
-│   └── csvlogger.h
-├── forms/
-│   └── mainwindow.ui
 ├── resources/
-│   └── icons.qrc (se usato)
-└── docs/
-    ├── protocollo-seriale.md
-    └── architettura.md
+|	└── icons.qrc (se usato)
+|── docs/
+|	├── protocollo-seriale.md
+|	└── architettura.md
+├──SentinelBoard/
+	├── src/
+	│   ├── main.cpp
+	│   ├── mainwindow.cpp
+	│   ├── serialmanager.cpp
+	│   ├── telemetryparser.cpp
+	│   ├── datamodel.cpp
+	│   ├── alarmmanager.cpp
+	│   └── csvlogger.cpp
+	├── include/
+	│   ├── mainwindow.h
+	│   ├── serialmanager.h
+	│   ├── telemetryparser.h
+	│   ├── datamodel.h
+	│   ├── alarmmanager.h
+	│   └── csvlogger.h
+	├── forms/
+		└── mainwindow.ui
 
 ## Come compilare
 - Aprire Qt Creator

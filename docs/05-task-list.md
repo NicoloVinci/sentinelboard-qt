@@ -80,17 +80,17 @@ Minut e Piazza si occupa della parte embedded e dei sensori.
 ## Blocchi principali da completare
 
 ### Blocco 1 - Setup iniziale
-- [ ] Ubuntu pronto
-- [ ] Qt Creator funzionante
-- [ ] Git configurato
-- [ ] due repository GitHub creati
+- [X] Ubuntu pronto
+- [X] Qt Creator funzionante
+- [X] Git configurato
+- [X] due repository GitHub creati
 
 ### Blocco 2 - Documentazione
-- [ ] idea progetto scritta
-- [ ] lista materiali pronta
-- [ ] protocollo seriale definito
-- [ ] architettura software documentata
-- [ ] README dei repository completati
+- [X] idea progetto scritta
+- [X] lista materiali pronta
+- [X] protocollo seriale definito
+- [X] architettura software documentata
+- [X] README dei repository completati
 
 ### Blocco 3 - Sviluppo Qt
 - [ ] finestra principale creata
