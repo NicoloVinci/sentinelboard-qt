@@ -23,9 +23,9 @@ void SimulationDataSource::stop() {
 void SimulationDataSource::generateSample() {
     m_timeMs += 1000;
 
-    m_temp += QRandomGenerator::global()->bounded(-0.3, 0.31);
-    m_hum += QRandomGenerator::global()->bounded(-0.8, 0.81);
-    m_dist += QRandomGenerator::global()->bounded(-2.0, 2.01);
+    m_temp += -0.3 + QRandomGenerator::global()->generateDouble() * 0.61;
+    m_hum  += -0.8 + QRandomGenerator::global()->generateDouble() * 1.61;
+    m_dist += -2.0 + QRandomGenerator::global()->generateDouble() * 4.01;
     m_light += QRandomGenerator::global()->bounded(-20, 21);
 
     m_temp = qBound(18.0, m_temp, 35.0);
