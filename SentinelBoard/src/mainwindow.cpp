@@ -44,19 +44,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::refreshSerialPorts()
-{
+void MainWindow::refreshSerialPorts() {
     ui->comboPorts->clear();
 
     const auto ports = QSerialPortInfo::availablePorts();
-    for (const QSerialPortInfo& port : ports) {
+    for (const auto& port : ports) {
         ui->comboPorts->addItem(port.portName());
-    }
-
-    if (ui->comboPorts->count() == 0) {
-        ui->labelStartupStatus->setText("Nessuna porta seriale trovata");
-    } else {
-        ui->labelStartupStatus->setText("Seleziona una porta e premi Accendi");
     }
 }
 
@@ -134,10 +127,9 @@ void MainWindow::handleSerialLine(const QString& line) {
     ui->labelStartupStatus->setText("Messaggio: " + line);
 }
 
-void MainWindow::updateDashboard(const TelemetrySample& sample)
-{
-    ui->labelTemp->setText(QString::number(sample.temperature, 'f', 1) + " °C");
-    ui->labelHum->setText(QString::number(sample.humidity, 'f', 1) + " %");
-    ui->labelLight->setText(QString::number(sample.light));
-    ui->labelStatus->setText(sample.status);
+void MainWindow::updateDashboard(const TelemetrySample& s) {
+    ui->labelTemp->setText(QString::number(s.temperature, 'f', 1) + " °C");
+    ui->labelHum->setText(QString::number(s.humidity, 'f', 1) + " %");
+    ui->labelLight->setText(QString::number(s.light));
+    ui->labelStatus->setText(s.status);
 }
