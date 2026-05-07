@@ -24,14 +24,14 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="pageStart">
      <widget class="QLabel" name="labelTitle">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>23</y>
+        <y>100</y>
         <width>800</width>
         <height>51</height>
        </rect>
@@ -50,7 +50,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>74</y>
+        <y>151</y>
         <width>800</width>
         <height>41</height>
        </rect>
@@ -69,7 +69,7 @@
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>180</y>
+        <y>257</y>
         <width>141</width>
         <height>26</height>
        </rect>
@@ -79,7 +79,7 @@
       <property name="geometry">
        <rect>
         <x>409</x>
-        <y>180</y>
+        <y>257</y>
         <width>141</width>
         <height>26</height>
        </rect>
@@ -92,7 +92,7 @@
       <property name="geometry">
        <rect>
         <x>353</x>
-        <y>230</y>
+        <y>307</y>
         <width>94</width>
         <height>26</height>
        </rect>
@@ -105,7 +105,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>300</y>
+        <y>377</y>
         <width>800</width>
         <height>51</height>
        </rect>
@@ -121,7 +121,89 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="pageDashboard"/>
+    <widget class="QWidget" name="pageDashboard">
+     <widget class="QLabel" name="labelDashboardTitle">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>90</y>
+        <width>800</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Dashboard SentinelBoard</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnStopSystem">
+      <property name="geometry">
+       <rect>
+        <x>353</x>
+        <y>190</y>
+        <width>94</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Turn off</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>270</y>
+        <width>311</width>
+        <height>211</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelLight">
+         <property name="text">
+          <string>---</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="labelStatus">
+         <property name="text">
+          <string>OFF</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="labelHum">
+         <property name="text">
+          <string>--.- %</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelTemp">
+         <property name="text">
+          <string>--.- °C</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
