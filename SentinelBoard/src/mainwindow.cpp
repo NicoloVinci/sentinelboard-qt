@@ -53,8 +53,7 @@ void MainWindow::refreshSerialPorts() {
     }
 }
 
-void MainWindow::resetDashboard()
-{
+void MainWindow::resetDashboard() {
     ui->labelTemp->setText("--.- °C");
     ui->labelHum->setText("--.- %");
     ui->labelLight->setText("---");
@@ -106,12 +105,8 @@ void MainWindow::handleSerialLine(const QString& line) {
     }
 
     if (line == "ACK_STOP" && m_waitingStopAck) {
-        m_waitingStopAck = false;
-
-        m_serialManager->closePort();
-        ui->labelStartupStatus->setText("Sistema spento");
+        resetDashboard();
         ui->stackedWidget->setCurrentWidget(ui->pageStart);
-        return;
     }
 
     if (line.startsWith("$TEL;")) {
