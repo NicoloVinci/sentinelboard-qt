@@ -60,10 +60,12 @@ void MainWindow::resetDashboard() {
     ui->labelStatus->setText("OFF");
 }
 
-void MainWindow::onStartSystemClicked() {
+void MainWindow::onStartSystemClicked()
+{
     ui->labelStartupStatus->setText("Connessione in corso...");
 
     QString portName = ui->comboPorts->currentText();
+
     if (portName.isEmpty()) {
         ui->labelStartupStatus->setText("Nessuna porta selezionata");
         return;
@@ -80,33 +82,40 @@ void MainWindow::onStartSystemClicked() {
     ui->labelStartupStatus->setText("Porta aperta, attendo Arduino...");
 
     QTimer::singleShot(2000, this, [this]() {
-        ui->labelStartupStatus->setText("Invio comando START...");
-        m_serialManager->sendCommand("START\n");
+        ui->labelStartupStatus->setText("Invio comando LED_ON...");
+        m_serialManager->sendCommand("LED_ON\n");
     });
 }
 
-void MainWindow::onStopSystemClicked() {
+void MainWindow::onStopSystemClicked()
+{
     if (!m_serialManager->isOpen())
         return;
 
     m_waitingStopAck = true;
     m_waitingStartAck = false;
 
-    ui->labelStartupStatus->setText("Invio comando STOP...");
-    m_serialManager->sendCommand("STOP\n");
+    ui->labelStartupStatus->setText("Invio comando LED_OFF...");
+    m_serialManager->sendCommand("LED_OFF\n");
 }
 
-void MainWindow::handleSerialLine(const QString& line) {
-    if (line == "ACK_START" && m_waitingStartAck) {
+void MainWindow::handleSerialLine(const QString& line)
+{
+    if (line == "ACK_LED_ON" && m_waitingStartAck) {
         m_waitingStartAck = false;
-        ui->labelStartupStatus->setText("Sistema acceso");
+        ui->labelStartupStatus->setText("LED acceso, dashboard attiva");
         ui->stackedWidget->setCurrentWidget(ui->pageDashboard);
         return;
     }
 
-    if (line == "ACK_STOP" && m_waitingStopAck) {
+    if (line == "ACK_LED_OFF" && m_waitingStopAck) {
+        m_waitingStopAck = false;
+
+        m_serialManager->closePort();
         resetDashboard();
+        ui->labelStartupStatus->setText("Sistema spento");
         ui->stackedWidget->setCurrentWidget(ui->pageStart);
+        return;
     }
 
     if (line.startsWith("$TEL;")) {

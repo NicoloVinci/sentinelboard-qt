@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets SerialPort Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets SerialPort Charts)
 
 qt_add_executable(SentinelBoard
     src/main.cpp
@@ -38,6 +38,8 @@ target_include_directories(SentinelBoard PRIVATE
 )
 
 target_link_libraries(SentinelBoard PRIVATE
+    Qt6::Core
+    Qt6::Gui
     Qt6::Widgets
     Qt6::SerialPort
     Qt6::Charts
