@@ -80,22 +80,12 @@ void MainWindow::setupCharts()
 
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(8, 8, 8, 8);
-    layout->setSpacing(8);
+    layout->setSpacing(6);
     layout->addWidget(m_tempChartView);
     layout->addWidget(m_humChartView);
     layout->addWidget(m_lightChartView);
 
-    // Aggiunge i grafici in fondo alla pageDashboard senza toccare i widget esistenti
-    QWidget* container = new QWidget();
-    container->setLayout(layout);
-
-    // Trova il layout esistente di pageDashboard e aggiunge il container
-    if (!ui->pageDashboard->layout()) {
-        QVBoxLayout* pageLayout = new QVBoxLayout(ui->pageDashboard);
-        pageLayout->addWidget(container);
-    } else {
-        ui->pageDashboard->layout()->addWidget(container);
-    }
+    ui->chartsContainer->setLayout(layout);
 }
 
 void MainWindow::refreshSerialPorts()
