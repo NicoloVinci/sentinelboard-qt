@@ -8,7 +8,12 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QTimer>
+#include <QVBoxLayout>
 
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -18,14 +23,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->btnStartSystem, &QPushButton::clicked,
-            this, &MainWindow::onStartSystemClicked);
-
-    connect(ui->btnStopSystem, &QPushButton::clicked,
-            this, &MainWindow::onStopSystemClicked);
-
-    connect(ui->btnRefreshPorts, &QPushButton::clicked,
-            this, &MainWindow::refreshSerialPorts);
+    connect(ui->btnStartSystem,   &QPushButton::clicked, this, &MainWindow::onStartSystemClicked);
+    connect(ui->btnStopSystem,    &QPushButton::clicked, this, &MainWindow::onStopSystemClicked);
+    connect(ui->btnRefreshPorts,  &QPushButton::clicked, this, &MainWindow::refreshSerialPorts);
 
     connect(m_serialManager, &SerialManager::lineReceived,
             this, &MainWindow::handleSerialLine);
@@ -36,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->setCurrentWidget(ui->pageStart);
     refreshSerialPorts();
     resetDashboard();
+    setupCharts();
+
     ui->labelStartupStatus->setText("Sistema spento");
 }
 
@@ -44,16 +46,68 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::refreshSerialPorts() {
-    ui->comboPorts->clear();
+void MainWindow::setupCharts()
+{
+    auto makeChartView = [](QLineSeries* series, const QString& title,
+                            const QString& yLabel, QColor color) -> QChartView*
+    {
+        series->setName(title);
+        series->setColor(color);
 
-    const auto ports = QSerialPortInfo::availablePorts();
-    for (const auto& port : ports) {
-        ui->comboPorts->addItem(port.portName());
+        QChart* chart = new QChart();
+        chart->addSeries(series);
+        chart->setTitle(title);
+        chart->legend()->hide();
+        chart->setMargins(QMargins(4, 4, 4, 4));
+        chart->setBackgroundRoundness(6);
+
+        chart->createDefaultAxes();
+
+        auto* axisX = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first());
+        auto* axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
+        if (axisX) axisX->setTitleText("Tempo (s)");
+        if (axisY) axisY->setTitleText(yLabel);
+
+        QChartView* view = new QChartView(chart);
+        view->setRenderHint(QPainter::Antialiasing);
+        view->setMinimumHeight(160);
+        return view;
+    };
+
+    m_tempChartView  = makeChartView(m_dataModel->tempSeries(),  "Temperatura", "°C",   QColor("#e74c3c"));
+    m_humChartView   = makeChartView(m_dataModel->humSeries(),   "Umidità",     "%",    QColor("#3498db"));
+    m_lightChartView = makeChartView(m_dataModel->lightSeries(), "Luce",        "lux",  QColor("#f39c12"));
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    layout->setContentsMargins(8, 8, 8, 8);
+    layout->setSpacing(8);
+    layout->addWidget(m_tempChartView);
+    layout->addWidget(m_humChartView);
+    layout->addWidget(m_lightChartView);
+
+    // Aggiunge i grafici in fondo alla pageDashboard senza toccare i widget esistenti
+    QWidget* container = new QWidget();
+    container->setLayout(layout);
+
+    // Trova il layout esistente di pageDashboard e aggiunge il container
+    if (!ui->pageDashboard->layout()) {
+        QVBoxLayout* pageLayout = new QVBoxLayout(ui->pageDashboard);
+        pageLayout->addWidget(container);
+    } else {
+        ui->pageDashboard->layout()->addWidget(container);
     }
 }
 
-void MainWindow::resetDashboard() {
+void MainWindow::refreshSerialPorts()
+{
+    ui->comboPorts->clear();
+    const auto ports = QSerialPortInfo::availablePorts();
+    for (const auto& port : ports)
+        ui->comboPorts->addItem(port.portName());
+}
+
+void MainWindow::resetDashboard()
+{
     ui->labelTemp->setText("--.- °C");
     ui->labelHum->setText("--.- %");
     ui->labelLight->setText("---");
@@ -65,7 +119,6 @@ void MainWindow::onStartSystemClicked()
     ui->labelStartupStatus->setText("Connessione in corso...");
 
     QString portName = ui->comboPorts->currentText();
-
     if (portName.isEmpty()) {
         ui->labelStartupStatus->setText("Nessuna porta selezionata");
         return;
@@ -77,7 +130,7 @@ void MainWindow::onStartSystemClicked()
     }
 
     m_waitingStartAck = true;
-    m_waitingStopAck = false;
+    m_waitingStopAck  = false;
 
     ui->labelStartupStatus->setText("Porta aperta, attendo Arduino...");
 
@@ -92,7 +145,7 @@ void MainWindow::onStopSystemClicked()
     if (!m_serialManager->isOpen())
         return;
 
-    m_waitingStopAck = true;
+    m_waitingStopAck  = true;
     m_waitingStartAck = false;
 
     ui->labelStartupStatus->setText("Invio comando LED_OFF...");
@@ -110,7 +163,6 @@ void MainWindow::handleSerialLine(const QString& line)
 
     if (line == "ACK_LED_OFF" && m_waitingStopAck) {
         m_waitingStopAck = false;
-
         m_serialManager->closePort();
         resetDashboard();
         ui->labelStartupStatus->setText("Sistema spento");
@@ -121,19 +173,41 @@ void MainWindow::handleSerialLine(const QString& line)
     if (line.startsWith("$TEL;")) {
         TelemetrySample sample;
         QString error;
-
-        if (TelemetryParser::parseLine(line, sample, error)) {
+        if (TelemetryParser::parseLine(line, sample, error))
             m_dataModel->addSample(sample);
-        }
         return;
     }
 
     ui->labelStartupStatus->setText("Messaggio: " + line);
 }
 
-void MainWindow::updateDashboard(const TelemetrySample& s) {
+void MainWindow::updateDashboard(const TelemetrySample& s)
+{
     ui->labelTemp->setText(QString::number(s.temperature, 'f', 1) + " °C");
-    ui->labelHum->setText(QString::number(s.humidity, 'f', 1) + " %");
+    ui->labelHum->setText(QString::number(s.humidity,    'f', 1) + " %");
     ui->labelLight->setText(QString::number(s.light));
     ui->labelStatus->setText(s.status);
+
+    // Aggiorna gli assi X dei grafici per scorrere con il tempo
+    auto updateAxis = [](QChartView* view) {
+        if (!view) return;
+        auto* chart = view->chart();
+        auto axes = chart->axes(Qt::Horizontal);
+        if (axes.isEmpty()) return;
+        auto* axisX = qobject_cast<QValueAxis*>(axes.first());
+        if (!axisX) return;
+
+        auto series = chart->series();
+        if (series.isEmpty()) return;
+        auto* line = qobject_cast<QLineSeries*>(series.first());
+        if (!line || line->count() == 0) return;
+
+        qreal lastX = line->at(line->count() - 1).x();
+        qreal minX  = qMax(0.0, lastX - 60.0); // finestra scorrevole di 60 secondi
+        axisX->setRange(minX, lastX + 2.0);
+    };
+
+    updateAxis(m_tempChartView);
+    updateAxis(m_humChartView);
+    updateAxis(m_lightChartView);
 }
