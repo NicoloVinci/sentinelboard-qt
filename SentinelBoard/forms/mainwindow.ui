@@ -27,7 +27,6 @@
      <number>0</number>
     </property>
 
-    <!-- PAGE START -->
     <widget class="QWidget" name="pageStart">
      <widget class="QLabel" name="labelTitle">
       <property name="geometry">
@@ -72,7 +71,6 @@
      </widget>
     </widget>
 
-    <!-- PAGE DASHBOARD -->
     <widget class="QWidget" name="pageDashboard">
      <widget class="QLabel" name="labelDashboardTitle">
       <property name="geometry">
@@ -81,15 +79,28 @@
       <property name="text"><string>Dashboard SentinelBoard</string></property>
       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
      </widget>
+     <widget class="QLabel" name="labelSampleCount">
+      <property name="geometry">
+       <rect><x>0</x><y>50</y><width>800</width><height>20</height></rect>
+      </property>
+      <property name="text"><string>Campioni ricevuti: 0</string></property>
+      <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+     </widget>
      <widget class="QPushButton" name="btnStopSystem">
       <property name="geometry">
-       <rect><x>353</x><y>55</y><width>94</width><height>27</height></rect>
+       <rect><x>300</x><y>73</y><width>94</width><height>27</height></rect>
       </property>
       <property name="text"><string>Turn off</string></property>
      </widget>
+     <widget class="QPushButton" name="btnExportCsv">
+      <property name="geometry">
+       <rect><x>406</x><y>73</y><width>100</width><height>27</height></rect>
+      </property>
+      <property name="text"><string>Esporta CSV</string></property>
+     </widget>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
-       <rect><x>240</x><y>90</y><width>311</width><height>100</height></rect>
+       <rect><x>240</x><y>108</y><width>311</width><height>90</height></rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
@@ -120,7 +131,7 @@
      </widget>
      <widget class="QWidget" name="chartsContainer">
       <property name="geometry">
-       <rect><x>0</x><y>200</y><width>800</width><height>340</height></rect>
+       <rect><x>0</x><y>205</y><width>800</width><height>335</height></rect>
       </property>
      </widget>
     </widget>

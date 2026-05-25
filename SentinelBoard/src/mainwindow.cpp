@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupCharts();
 
     ui->labelStartupStatus->setText("Sistema spento");
+    ui->comboPorts->addItem("SIM");
 }
 
 MainWindow::~MainWindow()
@@ -106,13 +107,29 @@ void MainWindow::resetDashboard()
 
 void MainWindow::onStartSystemClicked()
 {
-    ui->labelStartupStatus->setText("Connessione in corso...");
-
     QString portName = ui->comboPorts->currentText();
-    if (portName.isEmpty()) {
-        ui->labelStartupStatus->setText("Nessuna porta selezionata");
+
+    if (portName == "SIM" || portName.isEmpty()) {
+        // Modalità simulazione
+        m_simulationMode = true;
+        if (!m_simulation)
+            m_simulation = new SimulationDataSource(this);
+
+        connect(m_simulation, &SimulationDataSource::lineReceived,
+                this, &MainWindow::handleSerialLine, Qt::UniqueConnection);
+        connect(m_simulation, &SimulationDataSource::statusMessage,
+                this, [this](const QString& msg){
+                    ui->labelStartupStatus->setText(msg);
+                });
+
+        m_simulation->start();
+        ui->stackedWidget->setCurrentWidget(ui->pageDashboard);
         return;
     }
+
+    // Modalità reale (codice già esistente)
+    m_simulationMode = false;
+    ui->labelStartupStatus->setText("Connessione in corso...");
 
     if (!m_serialManager->openPort(portName, QSerialPort::Baud115200)) {
         ui->labelStartupStatus->setText("Errore apertura seriale");
@@ -121,7 +138,6 @@ void MainWindow::onStartSystemClicked()
 
     m_waitingStartAck = true;
     m_waitingStopAck  = false;
-
     ui->labelStartupStatus->setText("Porta aperta, attendo Arduino...");
 
     QTimer::singleShot(2000, this, [this]() {
@@ -132,12 +148,19 @@ void MainWindow::onStartSystemClicked()
 
 void MainWindow::onStopSystemClicked()
 {
-    if (!m_serialManager->isOpen())
+    if (m_simulationMode && m_simulation) {
+        m_simulation->stop();
+        m_simulationMode = false;
+        resetDashboard();
+        ui->labelStartupStatus->setText("Sistema spento");
+        ui->stackedWidget->setCurrentWidget(ui->pageStart);
         return;
+    }
+
+    if (!m_serialManager->isOpen()) return;
 
     m_waitingStopAck  = true;
     m_waitingStartAck = false;
-
     ui->labelStartupStatus->setText("Invio comando LED_OFF...");
     m_serialManager->sendCommand("LED_OFF\n");
 }
@@ -174,30 +197,64 @@ void MainWindow::handleSerialLine(const QString& line)
 void MainWindow::updateDashboard(const TelemetrySample& s)
 {
     ui->labelTemp->setText(QString::number(s.temperature, 'f', 1) + " °C");
-    ui->labelHum->setText(QString::number(s.humidity,    'f', 1) + " %");
-    ui->labelLight->setText(QString::number(s.light));
-    ui->labelStatus->setText(s.status);
+    ui->labelTemp->setStyleSheet(s.temperature > 30.0 ? "color: red; font-weight: bold;" : "");
 
-    // Aggiorna gli assi X dei grafici per scorrere con il tempo
-    auto updateAxis = [](QChartView* view) {
+    ui->labelHum->setText(QString::number(s.humidity, 'f', 1) + " %");
+    ui->labelHum->setStyleSheet(s.humidity > 70.0 ? "color: red; font-weight: bold;" : "");
+
+    ui->labelLight->setText(QString::number(s.light));
+    ui->labelLight->setStyleSheet("");
+
+    ui->labelStatus->setText(s.status);
+    ui->labelStatus->setStyleSheet(s.status == "ERR" ? "color: red; font-weight: bold;" : "color: green;");
+
+    m_sampleCount++;  // <-- qui
+    ui->labelSampleCount->setText(QString("Campioni ricevuti: %1").arg(m_sampleCount));
+
+    auto refreshChart = [](QChartView* view) {
         if (!view) return;
         auto* chart = view->chart();
-        auto axes = chart->axes(Qt::Horizontal);
-        if (axes.isEmpty()) return;
-        auto* axisX = qobject_cast<QValueAxis*>(axes.first());
-        if (!axisX) return;
 
-        auto series = chart->series();
-        if (series.isEmpty()) return;
-        auto* line = qobject_cast<QLineSeries*>(series.first());
+        auto seriesList = chart->series();
+        if (seriesList.isEmpty()) return;
+        auto* line = qobject_cast<QLineSeries*>(seriesList.first());
         if (!line || line->count() == 0) return;
 
+        // Calcola min/max Y dai punti nella finestra visibile
         qreal lastX = line->at(line->count() - 1).x();
-        qreal minX  = qMax(0.0, lastX - 60.0); // finestra scorrevole di 60 secondi
-        axisX->setRange(minX, lastX + 2.0);
+        qreal minX  = qMax(0.0, lastX - 60.0);
+
+        qreal yMin =  1e9;
+        qreal yMax = -1e9;
+        for (const auto& pt : line->points()) {
+            if (pt.x() >= minX) {
+                yMin = qMin(yMin, pt.y());
+                yMax = qMax(yMax, pt.y());
+            }
+        }
+
+        // Margine del 10% sopra e sotto
+        qreal margin = (yMax - yMin) * 0.1;
+        if (margin < 0.5) margin = 0.5; // margine minimo se i dati sono piatti
+
+        // Aggiorna asse X
+        auto axesX = chart->axes(Qt::Horizontal);
+        if (!axesX.isEmpty()) {
+            auto* axisX = qobject_cast<QValueAxis*>(axesX.first());
+            if (axisX) axisX->setRange(minX, lastX + 2.0);
+        }
+
+        // Aggiorna asse Y
+        auto axesY = chart->axes(Qt::Vertical);
+        if (!axesY.isEmpty()) {
+            auto* axisY = qobject_cast<QValueAxis*>(axesY.first());
+            if (axisY) axisY->setRange(yMin - margin, yMax + margin);
+        }
+
+        chart->update();
     };
 
-    updateAxis(m_tempChartView);
-    updateAxis(m_humChartView);
-    updateAxis(m_lightChartView);
+    refreshChart(m_tempChartView);
+    refreshChart(m_humChartView);
+    refreshChart(m_lightChartView);
 }

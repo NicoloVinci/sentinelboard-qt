@@ -5,6 +5,7 @@
 #include <QtCharts/QChartView>
 #include "telemetrysample.h"
 #include "datamodel.h"
+#include "SimulationDataSource.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,6 +29,10 @@ private slots:
     void resetDashboard();
 
 private:
+    SimulationDataSource* m_simulation = nullptr;
+    bool m_simulationMode = false;
+
+private:
     void setupCharts();
 
     Ui::MainWindow *ui;
@@ -40,4 +45,6 @@ private:
 
     bool m_waitingStartAck = false;
     bool m_waitingStopAck  = false;
+
+    int m_sampleCount = 0;  // <-- aggiungila qui
 };

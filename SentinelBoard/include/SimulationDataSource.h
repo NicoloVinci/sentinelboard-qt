@@ -20,7 +20,5 @@ private:
     qint64 m_timeMs = 0;
     double m_temp = 24.0;
     double m_hum = 50.0;
-    double m_dist = 40.0;
-    int m_motion = 0;
     int m_light = 450;
 };
