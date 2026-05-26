@@ -30,7 +30,7 @@
     <widget class="QWidget" name="pageStart">
      <widget class="QLabel" name="labelTitle">
       <property name="geometry">
-       <rect><x>0</x><y>100</y><width>800</width><height>51</height></rect>
+       <rect><x>0</x><y>60</y><width>800</width><height>51</height></rect>
       </property>
       <property name="text"><string>SentinelBoard</string></property>
       <property name="textFormat"><enum>Qt::TextFormat::RichText</enum></property>
@@ -38,7 +38,7 @@
      </widget>
      <widget class="QLabel" name="labelSubtitle">
       <property name="geometry">
-       <rect><x>0</x><y>151</y><width>800</width><height>41</height></rect>
+       <rect><x>0</x><y>111</y><width>800</width><height>41</height></rect>
       </property>
       <property name="text"><string>Push the button to start up the monitoring system!</string></property>
       <property name="textFormat"><enum>Qt::TextFormat::PlainText</enum></property>
@@ -46,24 +46,54 @@
      </widget>
      <widget class="QComboBox" name="comboPorts">
       <property name="geometry">
-       <rect><x>250</x><y>257</y><width>141</width><height>26</height></rect>
+       <rect><x>250</x><y>180</y><width>141</width><height>26</height></rect>
       </property>
      </widget>
      <widget class="QPushButton" name="btnRefreshPorts">
       <property name="geometry">
-       <rect><x>409</x><y>257</y><width>141</width><height>26</height></rect>
+       <rect><x>409</x><y>180</y><width>141</width><height>26</height></rect>
       </property>
       <property name="text"><string>Update Ports</string></property>
      </widget>
      <widget class="QPushButton" name="btnStartSystem">
       <property name="geometry">
-       <rect><x>353</x><y>307</y><width>94</width><height>26</height></rect>
+       <rect><x>353</x><y>220</y><width>94</width><height>26</height></rect>
       </property>
       <property name="text"><string>Turn On</string></property>
      </widget>
+     <widget class="QLabel" name="labelThresholdTemp">
+      <property name="geometry">
+       <rect><x>200</x><y>270</y><width>160</width><height>20</height></rect>
+      </property>
+      <property name="text"><string>Soglia Temperatura (°C):</string></property>
+      <property name="alignment"><set>Qt::AlignmentFlag::AlignRight</set></property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="spinThresholdTemp">
+      <property name="geometry">
+       <rect><x>370</x><y>268</y><width>80</width><height>24</height></rect>
+      </property>
+      <property name="value"><double>30.0</double></property>
+      <property name="minimum"><double>0.0</double></property>
+      <property name="maximum"><double>50.0</double></property>
+     </widget>
+     <widget class="QLabel" name="labelThresholdHum">
+      <property name="geometry">
+       <rect><x>200</x><y>300</y><width>160</width><height>20</height></rect>
+      </property>
+      <property name="text"><string>Soglia Umidità (%):</string></property>
+      <property name="alignment"><set>Qt::AlignmentFlag::AlignRight</set></property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="spinThresholdHum">
+      <property name="geometry">
+       <rect><x>370</x><y>298</y><width>80</width><height>24</height></rect>
+      </property>
+      <property name="value"><double>70.0</double></property>
+      <property name="minimum"><double>0.0</double></property>
+      <property name="maximum"><double>100.0</double></property>
+     </widget>
      <widget class="QLabel" name="labelStartupStatus">
       <property name="geometry">
-       <rect><x>0</x><y>377</y><width>800</width><height>51</height></rect>
+       <rect><x>0</x><y>340</y><width>800</width><height>51</height></rect>
       </property>
       <property name="text"><string>System off</string></property>
       <property name="textFormat"><enum>Qt::TextFormat::PlainText</enum></property>
@@ -88,15 +118,21 @@
      </widget>
      <widget class="QPushButton" name="btnStopSystem">
       <property name="geometry">
-       <rect><x>300</x><y>73</y><width>94</width><height>27</height></rect>
+       <rect><x>247</x><y>73</y><width>94</width><height>27</height></rect>
       </property>
       <property name="text"><string>Turn off</string></property>
      </widget>
      <widget class="QPushButton" name="btnExportCsv">
       <property name="geometry">
-       <rect><x>406</x><y>73</y><width>100</width><height>27</height></rect>
+       <rect><x>353</x><y>73</y><width>100</width><height>27</height></rect>
       </property>
       <property name="text"><string>Esporta CSV</string></property>
+     </widget>
+     <widget class="QPushButton" name="btnPauseResume">
+      <property name="geometry">
+       <rect><x>465</x><y>73</y><width>100</width><height>27</height></rect>
+      </property>
+      <property name="text"><string>Pausa</string></property>
      </widget>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
