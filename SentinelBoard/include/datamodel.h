@@ -21,6 +21,7 @@ public:
     QLineSeries* tempSeries()  const { return m_tempSeries; }
     QLineSeries* humSeries()   const { return m_humSeries; }
     QLineSeries* lightSeries() const { return m_lightSeries; }
+    void clearHistory();
 
 signals:
     void currentSampleChanged(const TelemetrySample& sample);
@@ -34,4 +35,5 @@ private:
     QLineSeries* m_humSeries;
     QLineSeries* m_lightSeries;
     qint64 m_startTime = 0;
+    QDateTime m_startDateTime;
 };

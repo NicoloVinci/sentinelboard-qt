@@ -14,6 +14,10 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
+#include <QtCharts/QDateTimeAxis>
+#include <QFileDialog>
+#include <QTextStream>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -40,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->labelStartupStatus->setText("Sistema spento");
     ui->comboPorts->addItem("SIM");
+    connect(ui->btnExportCsv, &QPushButton::clicked, this, &MainWindow::exportCsv);
+    connect(ui->btnPauseResume, &QPushButton::clicked, this, &MainWindow::onPauseResumeClicked);
 }
 
 MainWindow::~MainWindow()
@@ -62,12 +68,19 @@ void MainWindow::setupCharts()
         chart->setMargins(QMargins(4, 4, 4, 4));
         chart->setBackgroundRoundness(6);
 
-        chart->createDefaultAxes();
+        // Asse Y
+        QValueAxis* axisY = new QValueAxis();
+        axisY->setTitleText(yLabel);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
 
-        auto* axisX = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first());
-        auto* axisY = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first());
-        if (axisX) axisX->setTitleText("Tempo (s)");
-        if (axisY) axisY->setTitleText(yLabel);
+        // Asse X con orario reale
+        QDateTimeAxis* axisX = new QDateTimeAxis();
+        axisX->setFormat("HH:mm:ss");
+        axisX->setTitleText("Orario");
+        axisX->setTickCount(5);
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series->attachAxis(axisX);
 
         QChartView* view = new QChartView(chart);
         view->setRenderHint(QPainter::Antialiasing);
@@ -103,10 +116,17 @@ void MainWindow::resetDashboard()
     ui->labelHum->setText("--.- %");
     ui->labelLight->setText("---");
     ui->labelStatus->setText("OFF");
+
+    m_sampleCount = 0;
+    ui->labelSampleCount->setText("Campioni ricevuti: 0");
+
+    m_dataModel->clearHistory();
 }
 
 void MainWindow::onStartSystemClicked()
 {
+    m_thresholdTemp = ui->spinThresholdTemp->value();
+    m_thresholdHum  = ui->spinThresholdHum->value();
     QString portName = ui->comboPorts->currentText();
 
     if (portName == "SIM" || portName.isEmpty()) {
@@ -151,8 +171,9 @@ void MainWindow::onStopSystemClicked()
     if (m_simulationMode && m_simulation) {
         m_simulation->stop();
         m_simulationMode = false;
+        autoSaveCsv();  // <-- aggiungi
         resetDashboard();
-        ui->labelStartupStatus->setText("Sistema spento");
+        ui->labelStartupStatus->setText("Sistema spento — sessione salvata");
         ui->stackedWidget->setCurrentWidget(ui->pageStart);
         return;
     }
@@ -177,17 +198,20 @@ void MainWindow::handleSerialLine(const QString& line)
     if (line == "ACK_LED_OFF" && m_waitingStopAck) {
         m_waitingStopAck = false;
         m_serialManager->closePort();
+        autoSaveCsv();  // <-- aggiungi
         resetDashboard();
-        ui->labelStartupStatus->setText("Sistema spento");
+        ui->labelStartupStatus->setText("Sistema spento — sessione salvata");
         ui->stackedWidget->setCurrentWidget(ui->pageStart);
         return;
     }
 
     if (line.startsWith("$TEL;")) {
-        TelemetrySample sample;
-        QString error;
-        if (TelemetryParser::parseLine(line, sample, error))
-            m_dataModel->addSample(sample);
+        if (!m_paused) {
+            TelemetrySample sample;
+            QString error;
+            if (TelemetryParser::parseLine(line, sample, error))
+                m_dataModel->addSample(sample);
+        }
         return;
     }
 
@@ -197,10 +221,10 @@ void MainWindow::handleSerialLine(const QString& line)
 void MainWindow::updateDashboard(const TelemetrySample& s)
 {
     ui->labelTemp->setText(QString::number(s.temperature, 'f', 1) + " °C");
-    ui->labelTemp->setStyleSheet(s.temperature > 30.0 ? "color: red; font-weight: bold;" : "");
+    ui->labelTemp->setStyleSheet(s.temperature > m_thresholdTemp ? "color: red; font-weight: bold;" : "");
 
     ui->labelHum->setText(QString::number(s.humidity, 'f', 1) + " %");
-    ui->labelHum->setStyleSheet(s.humidity > 70.0 ? "color: red; font-weight: bold;" : "");
+    ui->labelHum->setStyleSheet(s.humidity    > m_thresholdHum  ? "color: red; font-weight: bold;" : "");
 
     ui->labelLight->setText(QString::number(s.light));
     ui->labelLight->setStyleSheet("");
@@ -220,31 +244,31 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
         auto* line = qobject_cast<QLineSeries*>(seriesList.first());
         if (!line || line->count() == 0) return;
 
-        // Calcola min/max Y dai punti nella finestra visibile
         qreal lastX = line->at(line->count() - 1).x();
-        qreal minX  = qMax(0.0, lastX - 60.0);
+        qreal minX  = lastX - 60000.0; // 60 secondi in ms
 
-        qreal yMin =  1e9;
-        qreal yMax = -1e9;
+        // Asse X
+        auto axesX = chart->axes(Qt::Horizontal);
+        if (!axesX.isEmpty()) {
+            auto* axisX = qobject_cast<QDateTimeAxis*>(axesX.first());
+            if (axisX) {
+                axisX->setRange(
+                    QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(minX)),
+                    QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(lastX) + 2000)
+                    );
+            }
+        }
+
+        // Asse Y dinamico
+        qreal yMin =  1e9, yMax = -1e9;
         for (const auto& pt : line->points()) {
             if (pt.x() >= minX) {
                 yMin = qMin(yMin, pt.y());
                 yMax = qMax(yMax, pt.y());
             }
         }
+        qreal margin = qMax(0.5, (yMax - yMin) * 0.1);
 
-        // Margine del 10% sopra e sotto
-        qreal margin = (yMax - yMin) * 0.1;
-        if (margin < 0.5) margin = 0.5; // margine minimo se i dati sono piatti
-
-        // Aggiorna asse X
-        auto axesX = chart->axes(Qt::Horizontal);
-        if (!axesX.isEmpty()) {
-            auto* axisX = qobject_cast<QValueAxis*>(axesX.first());
-            if (axisX) axisX->setRange(minX, lastX + 2.0);
-        }
-
-        // Aggiorna asse Y
         auto axesY = chart->axes(Qt::Vertical);
         if (!axesY.isEmpty()) {
             auto* axisY = qobject_cast<QValueAxis*>(axesY.first());
@@ -257,4 +281,59 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
     refreshChart(m_tempChartView);
     refreshChart(m_humChartView);
     refreshChart(m_lightChartView);
+}
+
+void MainWindow::exportCsv()
+{
+    QString path = QFileDialog::getSaveFileName(
+        this, "Esporta CSV", "telemetria.csv", "CSV (*.csv)");
+    if (path.isEmpty()) return;
+
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+
+    QTextStream out(&file);
+    out << "Timestamp,Temperatura,Umidità,Luce,Status\n";
+
+    for (const auto& s : m_dataModel->history()) {
+        out << s.receivedAt.toString("yyyy-MM-dd HH:mm:ss") << ","
+            << QString::number(s.temperature, 'f', 1) << ","
+            << QString::number(s.humidity,    'f', 1) << ","
+            << s.light << ","
+            << s.status << "\n";
+    }
+
+    file.close();
+    ui->labelStartupStatus->setText("CSV esportato: " + path);
+}
+
+void MainWindow::autoSaveCsv()
+{
+    if (m_dataModel->history().isEmpty()) return;
+
+    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
+    QString path = QDir::homePath() + "/sentinelboard_" + timestamp + ".csv";
+
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+
+    QTextStream out(&file);
+    out << "Timestamp,Temperatura,Umidità,Luce,Status\n";
+
+    for (const auto& s : m_dataModel->history()) {
+        out << s.receivedAt.toString("yyyy-MM-dd HH:mm:ss") << ","
+            << QString::number(s.temperature, 'f', 1) << ","
+            << QString::number(s.humidity,    'f', 1) << ","
+            << s.light << ","
+            << s.status << "\n";
+    }
+
+    file.close();
+    ui->labelStartupStatus->setText("Sessione salvata: " + path);
+}
+
+void MainWindow::onPauseResumeClicked()
+{
+    m_paused = !m_paused;
+    ui->btnPauseResume->setText(m_paused ? "Riprendi" : "Pausa");
 }

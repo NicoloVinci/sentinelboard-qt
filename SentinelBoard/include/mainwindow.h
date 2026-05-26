@@ -27,10 +27,9 @@ private slots:
     void refreshSerialPorts();
     void updateDashboard(const TelemetrySample& sample);
     void resetDashboard();
-
-private:
-    SimulationDataSource* m_simulation = nullptr;
-    bool m_simulationMode = false;
+    void exportCsv();
+    void onPauseResumeClicked();
+    void autoSaveCsv();
 
 private:
     void setupCharts();
@@ -46,5 +45,13 @@ private:
     bool m_waitingStartAck = false;
     bool m_waitingStopAck  = false;
 
-    int m_sampleCount = 0;  // <-- aggiungila qui
+    int m_sampleCount = 0;
+
+    SimulationDataSource* m_simulation = nullptr;
+    bool m_simulationMode = false;
+
+    double m_thresholdTemp = 30.0;
+    double m_thresholdHum  = 70.0;
+
+    bool m_paused = false;
 };
