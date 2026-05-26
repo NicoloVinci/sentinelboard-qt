@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <QLabel>
 #include <QtCharts/QChartView>
 #include "telemetrysample.h"
 #include "datamodel.h"
@@ -30,8 +31,16 @@ private slots:
     void exportCsv();
     void onPauseResumeClicked();
     void autoSaveCsv();
+    void onAboutClicked();
+    void onBackFromAboutClicked();
+    void updateIndicators(const TelemetrySample& s);
 
 private:
+    QLabel* m_indicatorTemp   = nullptr;
+    QLabel* m_indicatorHum    = nullptr;
+    QLabel* m_indicatorLight  = nullptr;
+    QLabel* m_indicatorStatus = nullptr;
+
     void setupCharts();
 
     Ui::MainWindow *ui;
