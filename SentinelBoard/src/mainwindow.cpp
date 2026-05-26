@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "forms/ui_mainwindow.h"
 
 #include "serialmanager.h"
 #include "telemetryparser.h"
@@ -18,6 +18,9 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QDir>
+#include <QApplication>
+#include <QFile>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -27,7 +30,27 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->btnStartSystem,   &QPushButton::clicked, this, &MainWindow::onStartSystemClicked);
+    // Carica QSS
+    QFile styleFile(QCoreApplication::applicationDirPath() + "/../../../resources/style.qss");
+    if (styleFile.open(QFile::ReadOnly)) {
+        qApp->setStyleSheet(styleFile.readAll());
+    } else {
+        qDebug() << "QSS non trovato in:" << styleFile.fileName();
+    }
+
+    // Margini layout
+    ui->centralLayout->setContentsMargins(0, 0, 0, 0);
+    ui->pageStartLayout->setContentsMargins(20, 20, 20, 20);
+    ui->pageDashboardLayout->setContentsMargins(8, 8, 8, 8);
+    ui->pageAboutLayout->setContentsMargins(20, 20, 20, 20);
+
+    // Indicatori
+    m_indicatorTemp   = ui->indicatorTemp;
+    m_indicatorHum    = ui->indicatorHum;
+    m_indicatorLight  = ui->indicatorLight;
+    m_indicatorStatus = ui->indicatorStatus;
+
+    connect(ui->btnStartSystem, &QPushButton::clicked, this, &MainWindow::onStartSystemClicked);
     connect(ui->btnStopSystem,    &QPushButton::clicked, this, &MainWindow::onStopSystemClicked);
     connect(ui->btnRefreshPorts,  &QPushButton::clicked, this, &MainWindow::refreshSerialPorts);
 
@@ -46,6 +69,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboPorts->addItem("SIM");
     connect(ui->btnExportCsv, &QPushButton::clicked, this, &MainWindow::exportCsv);
     connect(ui->btnPauseResume, &QPushButton::clicked, this, &MainWindow::onPauseResumeClicked);
+    setWindowTitle("SentinelBoard — Sistema spento");
+    connect(ui->btnAbout,          &QPushButton::clicked, this, &MainWindow::onAboutClicked);
+    connect(ui->btnBackFromAbout,  &QPushButton::clicked, this, &MainWindow::onBackFromAboutClicked);
 }
 
 MainWindow::~MainWindow()
@@ -112,6 +138,11 @@ void MainWindow::refreshSerialPorts()
 
 void MainWindow::resetDashboard()
 {
+    m_indicatorTemp->setStyleSheet("background-color: green; border-radius: 8px;");
+    m_indicatorHum->setStyleSheet("background-color: green; border-radius: 8px;");
+    m_indicatorLight->setStyleSheet("background-color: green; border-radius: 8px;");
+    m_indicatorStatus->setStyleSheet("background-color: green; border-radius: 8px;");
+
     ui->labelTemp->setText("--.- °C");
     ui->labelHum->setText("--.- %");
     ui->labelLight->setText("---");
@@ -120,17 +151,27 @@ void MainWindow::resetDashboard()
     m_sampleCount = 0;
     ui->labelSampleCount->setText("Campioni ricevuti: 0");
 
+    auto resetColor = [](QLabel* lbl) {
+        if (lbl) lbl->setStyleSheet("background-color: green; border-radius: 8px;");
+    };
+    resetColor(m_indicatorTemp);
+    resetColor(m_indicatorHum);
+    resetColor(m_indicatorLight);
+    resetColor(m_indicatorStatus);
+
     m_dataModel->clearHistory();
+
+    ui->pageDashboard->setStyleSheet("background-color: none;");
 }
 
 void MainWindow::onStartSystemClicked()
 {
     m_thresholdTemp = ui->spinThresholdTemp->value();
     m_thresholdHum  = ui->spinThresholdHum->value();
+
     QString portName = ui->comboPorts->currentText();
 
     if (portName == "SIM" || portName.isEmpty()) {
-        // Modalità simulazione
         m_simulationMode = true;
         if (!m_simulation)
             m_simulation = new SimulationDataSource(this);
@@ -143,16 +184,19 @@ void MainWindow::onStartSystemClicked()
                 });
 
         m_simulation->start();
+        setWindowTitle("SentinelBoard — Sessione attiva");  // <-- aggiungi
         ui->stackedWidget->setCurrentWidget(ui->pageDashboard);
         return;
     }
 
-    // Modalità reale (codice già esistente)
+    // Modalità reale
     m_simulationMode = false;
+    setWindowTitle("SentinelBoard — Connessione in corso...");
     ui->labelStartupStatus->setText("Connessione in corso...");
 
     if (!m_serialManager->openPort(portName, QSerialPort::Baud115200)) {
         ui->labelStartupStatus->setText("Errore apertura seriale");
+        setWindowTitle("SentinelBoard — Sistema spento");
         return;
     }
 
@@ -168,10 +212,11 @@ void MainWindow::onStartSystemClicked()
 
 void MainWindow::onStopSystemClicked()
 {
+    setWindowTitle("SentinelBoard — Sistema spento");
     if (m_simulationMode && m_simulation) {
         m_simulation->stop();
         m_simulationMode = false;
-        autoSaveCsv();  // <-- aggiungi
+        autoSaveCsv();
         resetDashboard();
         ui->labelStartupStatus->setText("Sistema spento — sessione salvata");
         ui->stackedWidget->setCurrentWidget(ui->pageStart);
@@ -190,6 +235,7 @@ void MainWindow::handleSerialLine(const QString& line)
 {
     if (line == "ACK_LED_ON" && m_waitingStartAck) {
         m_waitingStartAck = false;
+        setWindowTitle("SentinelBoard — Sessione attiva");
         ui->labelStartupStatus->setText("LED acceso, dashboard attiva");
         ui->stackedWidget->setCurrentWidget(ui->pageDashboard);
         return;
@@ -198,8 +244,9 @@ void MainWindow::handleSerialLine(const QString& line)
     if (line == "ACK_LED_OFF" && m_waitingStopAck) {
         m_waitingStopAck = false;
         m_serialManager->closePort();
-        autoSaveCsv();  // <-- aggiungi
+        autoSaveCsv();
         resetDashboard();
+        setWindowTitle("SentinelBoard — Sistema spento");
         ui->labelStartupStatus->setText("Sistema spento — sessione salvata");
         ui->stackedWidget->setCurrentWidget(ui->pageStart);
         return;
@@ -220,6 +267,32 @@ void MainWindow::handleSerialLine(const QString& line)
 
 void MainWindow::updateDashboard(const TelemetrySample& s)
 {
+    // Indicatore temperatura
+    if (s.temperature > m_thresholdTemp)
+        m_indicatorTemp->setStyleSheet("background-color: red; border-radius: 8px;");
+    else if (s.temperature > m_thresholdTemp * 0.85)
+        m_indicatorTemp->setStyleSheet("background-color: orange; border-radius: 8px;");
+    else
+        m_indicatorTemp->setStyleSheet("background-color: green; border-radius: 8px;");
+
+    // Indicatore umidità
+    if (s.humidity > m_thresholdHum)
+        m_indicatorHum->setStyleSheet("background-color: red; border-radius: 8px;");
+    else if (s.humidity > m_thresholdHum * 0.85)
+        m_indicatorHum->setStyleSheet("background-color: orange; border-radius: 8px;");
+    else
+        m_indicatorHum->setStyleSheet("background-color: green; border-radius: 8px;");
+
+    // Indicatore luce (soglia fissa: buio sotto 100, ottimale sopra)
+    if (s.light < 100)
+        m_indicatorLight->setStyleSheet("background-color: orange; border-radius: 8px;");
+    else
+        m_indicatorLight->setStyleSheet("background-color: green; border-radius: 8px;");
+
+    m_indicatorStatus->setStyleSheet(
+        s.status == "ERR" ? "background-color: red; border-radius: 8px;"
+                          : "background-color: green; border-radius: 8px;");
+
     ui->labelTemp->setText(QString::number(s.temperature, 'f', 1) + " °C");
     ui->labelTemp->setStyleSheet(s.temperature > m_thresholdTemp ? "color: red; font-weight: bold;" : "");
 
@@ -281,6 +354,11 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
     refreshChart(m_tempChartView);
     refreshChart(m_humChartView);
     refreshChart(m_lightChartView);
+
+    // Sfondo allarme
+    bool allarme = (s.temperature > m_thresholdTemp) || (s.humidity > m_thresholdHum);
+    ui->pageDashboard->setStyleSheet(
+        allarme ? "background-color: #ffdddd;" : "background-color: none;");
 }
 
 void MainWindow::exportCsv()
@@ -336,4 +414,34 @@ void MainWindow::onPauseResumeClicked()
 {
     m_paused = !m_paused;
     ui->btnPauseResume->setText(m_paused ? "Riprendi" : "Pausa");
+}
+
+void MainWindow::onAboutClicked()
+{
+    ui->stackedWidget->setCurrentWidget(ui->pageAbout);
+}
+
+void MainWindow::onBackFromAboutClicked()
+{
+    ui->stackedWidget->setCurrentWidget(ui->pageStart);
+}
+
+void MainWindow::updateIndicators(const TelemetrySample& s)
+{
+    auto setColor = [](QLabel* lbl, const QString& color) {
+        if (lbl) lbl->setStyleSheet(
+                QString("background-color: %1; border-radius: 8px;").arg(color));
+    };
+
+    setColor(m_indicatorTemp,
+             s.temperature > m_thresholdTemp         ? "red" :
+                 s.temperature > m_thresholdTemp * 0.85  ? "orange" : "green");
+
+    setColor(m_indicatorHum,
+             s.humidity > m_thresholdHum         ? "red" :
+                 s.humidity > m_thresholdHum * 0.85  ? "orange" : "green");
+
+    setColor(m_indicatorLight, s.light < 100 ? "orange" : "green");
+
+    setColor(m_indicatorStatus, s.status == "ERR" ? "red" : "green");
 }

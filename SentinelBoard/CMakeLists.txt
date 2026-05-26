@@ -44,3 +44,8 @@ target_link_libraries(SentinelBoard PRIVATE
     Qt6::SerialPort
     Qt6::Charts
 )
+
+qt_add_resources(SentinelBoard "resources"
+    PREFIX "/"
+    FILES resources/style.qss
+)
