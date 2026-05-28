@@ -30,7 +30,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Carica QSS
     QFile styleFile(":/resources/style.qss");
     if (styleFile.open(QFile::ReadOnly)) {
         qApp->setStyleSheet(styleFile.readAll());
@@ -38,13 +37,11 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "QSS non trovato in:" << styleFile.fileName();
     }
 
-    // Margini layout
     ui->centralLayout->setContentsMargins(0, 0, 0, 0);
     ui->pageStartLayout->setContentsMargins(20, 20, 20, 20);
     ui->pageDashboardLayout->setContentsMargins(8, 8, 8, 8);
     ui->pageAboutLayout->setContentsMargins(20, 20, 20, 20);
 
-    // Indicatori
     m_indicatorTemp   = ui->indicatorTemp;
     m_indicatorHum    = ui->indicatorHum;
     m_indicatorLight  = ui->indicatorLight;
@@ -94,13 +91,11 @@ void MainWindow::setupCharts()
         chart->setMargins(QMargins(4, 4, 4, 4));
         chart->setBackgroundRoundness(6);
 
-        // Asse Y
         QValueAxis* axisY = new QValueAxis();
         axisY->setTitleText(yLabel);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
 
-        // Asse X con orario reale
         QDateTimeAxis* axisX = new QDateTimeAxis();
         axisX->setFormat("HH:mm:ss");
         axisX->setTitleText("Orario");
@@ -189,7 +184,6 @@ void MainWindow::onStartSystemClicked()
         return;
     }
 
-    // Modalità reale
     m_simulationMode = false;
     setWindowTitle("SentinelBoard — Connessione in corso...");
     ui->labelStartupStatus->setText("Connessione in corso...");
@@ -267,7 +261,6 @@ void MainWindow::handleSerialLine(const QString& line)
 
 void MainWindow::updateDashboard(const TelemetrySample& s)
 {
-    // Indicatore temperatura
     if (s.temperature > m_thresholdTemp)
         m_indicatorTemp->setStyleSheet("background-color: red; border-radius: 8px;");
     else if (s.temperature > m_thresholdTemp * 0.85)
@@ -275,7 +268,6 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
     else
         m_indicatorTemp->setStyleSheet("background-color: green; border-radius: 8px;");
 
-    // Indicatore umidità
     if (s.humidity > m_thresholdHum)
         m_indicatorHum->setStyleSheet("background-color: red; border-radius: 8px;");
     else if (s.humidity > m_thresholdHum * 0.85)
@@ -283,7 +275,6 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
     else
         m_indicatorHum->setStyleSheet("background-color: green; border-radius: 8px;");
 
-    // Indicatore luce (soglia fissa: buio sotto 100, ottimale sopra)
     if (s.light < 100)
         m_indicatorLight->setStyleSheet("background-color: orange; border-radius: 8px;");
     else
@@ -305,7 +296,7 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
     ui->labelStatus->setText(s.status);
     ui->labelStatus->setStyleSheet(s.status == "ERR" ? "color: red; font-weight: bold;" : "color: green;");
 
-    m_sampleCount++;  // <-- qui
+    m_sampleCount++;
     ui->labelSampleCount->setText(QString("Campioni ricevuti: %1").arg(m_sampleCount));
 
     auto refreshChart = [](QChartView* view) {
@@ -318,9 +309,8 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
         if (!line || line->count() == 0) return;
 
         qreal lastX = line->at(line->count() - 1).x();
-        qreal minX  = lastX - 60000.0; // 60 secondi in ms
+        qreal minX  = lastX - 60000.0;
 
-        // Asse X
         auto axesX = chart->axes(Qt::Horizontal);
         if (!axesX.isEmpty()) {
             auto* axisX = qobject_cast<QDateTimeAxis*>(axesX.first());
@@ -332,7 +322,6 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
             }
         }
 
-        // Asse Y dinamico
         qreal yMin =  1e9, yMax = -1e9;
         for (const auto& pt : line->points()) {
             if (pt.x() >= minX) {
@@ -355,7 +344,6 @@ void MainWindow::updateDashboard(const TelemetrySample& s)
     refreshChart(m_humChartView);
     refreshChart(m_lightChartView);
 
-    // Sfondo allarme
     bool allarme = (s.temperature > m_thresholdTemp) || (s.humidity > m_thresholdHum);
     ui->pageDashboard->setStyleSheet(
         allarme ? "background-color: #ffdddd;" : "background-color: none;");

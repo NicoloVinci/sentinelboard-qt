@@ -93,27 +93,27 @@ Minut e Piazza si occupa della parte embedded e dei sensori.
 - [X] README dei repository completati
 
 ### Blocco 3 - Sviluppo Qt
-- [ ] finestra principale creata
-- [ ] simulazione dati funzionante
-- [ ] parser funzionante
-- [ ] data model funzionante
-- [ ] grafici live funzionanti
-- [ ] allarmi funzionanti
-- [ ] export CSV funzionante
+- [X] finestra principale creata
+- [X] simulazione dati funzionante
+- [X] parser funzionante
+- [X] data model funzionante
+- [X] grafici live funzionanti
+- [X] allarmi funzionanti
+- [X] export CSV funzionante
 
 ### Blocco 4 - Sviluppo Arduino
-- [ ] sketch base creato
-- [ ] sensori collegati correttamente
-- [ ] lettura sensori funzionante
-- [ ] pacchetto seriale conforme al protocollo
-- [ ] test seriale superato
+- [X] sketch base creato
+- [X] sensori collegati correttamente
+- [X] lettura sensori funzionante
+- [X] pacchetto seriale conforme al protocollo
+- [X] test seriale superato
 
 ### Blocco 5 - Integrazione finale
-- [ ] connessione seriale reale da Qt
-- [ ] ricezione dati corretta
-- [ ] dashboard aggiornata con dati reali
-- [ ] demo stabile
-- [ ] materiali finali pronti per la consegna
+- [X] connessione seriale reale da Qt
+- [X] ricezione dati corretta
+- [X] dashboard aggiornata con dati reali
+- [X] demo stabile
+- [X] materiali finali pronti per la consegna
 
 ---
 

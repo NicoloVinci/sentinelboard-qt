@@ -12,7 +12,6 @@ void DataModel::addSample(const TelemetrySample& sample)
     qint64 now = QDateTime::currentMSecsSinceEpoch();
     if (m_startTime == 0) m_startTime = now;
 
-    // X = ms epoch (compatibile con QDateTimeAxis)
     m_tempSeries->append(now,  sample.temperature);
     m_humSeries->append(now,   sample.humidity);
     m_lightSeries->append(now, sample.light);
