@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Carica QSS
-    QFile styleFile(QCoreApplication::applicationDirPath() + "/../../../resources/style.qss");
+    QFile styleFile(":/resources/style.qss");
     if (styleFile.open(QFile::ReadOnly)) {
         qApp->setStyleSheet(styleFile.readAll());
     } else {
